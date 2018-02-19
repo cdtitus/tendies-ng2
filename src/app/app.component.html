@@ -1,0 +1,181 @@
+<div style="text-align:center">
+    <h3>
+        ChickenTendies v0.1
+    </h3>
+</div>
+<mat-card style="width: 1200px; margin: 0 auto; padding: 0;">
+    <mat-card-content>
+        <mat-tab-group dynamicHeight="true">
+            <mat-tab label="Wallet">
+                <ng-template mat-tab-label>
+                    <mat-icon style="margin-right: 7px;">account_balance</mat-icon>Wallet
+                </ng-template>
+                <mat-card style="margin: 25px;">
+                    <mat-card-content>
+                        <form style="margin-bottom: 20px;">
+                            <mat-form-field style="width: 100%;">
+                                <input name="privKey" matInput [(ngModel)]="privKey" type="text">
+                                <mat-hint align="start"><strong>Private Key</strong></mat-hint>
+                            </mat-form-field>
+                            <mat-form-field style="width: 100%;">
+                                <input name="pubKey" matInput [(ngModel)]="pubKey" type="text">
+                                <mat-hint align="start"><strong>Public Key</strong></mat-hint>
+                            </mat-form-field>
+                            <mat-form-field style="width: 100%;">
+                                <input name="ctAddr" matInput [(ngModel)]="ctAddr" type="text">
+                                <mat-hint align="start"><strong>ChickenTendies Address (SHA256 of Public Key)</strong></mat-hint>
+                            </mat-form-field>
+                        </form>
+                        <button mat-raised-button color="primary" (click)="generateKeyPair()">
+                            Generate Key Pair and Address
+                        </button>
+                        <button mat-raised-button color="primary" (click)="privKey='';pubKey='';ctAddr='';">
+                            Clear
+                        </button>
+                    </mat-card-content>
+                </mat-card>
+                <mat-card style="margin: 25px;">
+                    <mat-card-header>
+                        <mat-card-title><b>Get Balance</b></mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <form style="margin-bottom: 20px;">
+                            <mat-form-field style="width: 100%;">
+                                <input name="balanceAddr" matInput [(ngModel)]="balanceAddr" type="text">
+                                <mat-hint align="start"><strong>ChickenTendies Address</strong></mat-hint>
+                                <mat-hint align="end">Balance: {{balance.toString()}}</mat-hint>
+                            </mat-form-field>
+                        </form>
+                        <button mat-raised-button color="primary" (click)="getBalance()">
+                            Get Balance
+                        </button>
+                        <button mat-raised-button color="primary" (click)="balance=0;balanceAddr='';">
+                            Clear
+                        </button>
+                    </mat-card-content>
+                </mat-card>
+                <mat-card style="margin: 25px;">
+                    <mat-card-header>
+                        <mat-card-title><b>Create Transaction</b></mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <form style="margin-bottom: 20px;">
+                            <mat-form-field style="width: 100%;">
+                                <input name="wPrivateKey" matInput [(ngModel)]="wallet.privateKey" type="text">
+                                <mat-hint align="start"><strong>Private Key of Sender</strong></mat-hint>
+                            </mat-form-field>
+                            <mat-form-field style="width: 100%;">
+                                <input name="wPublicKey" matInput [(ngModel)]="wallet.publicKey" type="text">
+                                <mat-hint align="start"><strong>Public Key of Sender</strong></mat-hint>
+                            </mat-form-field>
+                            <mat-form-field style="width: 100%;">
+                                <input name="wAddress" matInput [(ngModel)]="wallet.address" type="text">
+                                <mat-hint align="start"><strong>Address of Sender</strong></mat-hint>
+                            </mat-form-field>
+                            <mat-form-field style="width: 100%;">
+                                <input name="txRecipient" matInput [(ngModel)]="txRecipient" type="text">
+                                <mat-hint align="start"><strong>Address of Recipient</strong></mat-hint>
+                            </mat-form-field>
+                            <mat-form-field style="width: 100%;">
+                                <input name="txAmount" matInput [(ngModel)]="txAmount" type="text">
+                                <mat-hint align="start"><strong>Amount to Send</strong></mat-hint>
+                            </mat-form-field>
+                        </form>
+                        <button mat-raised-button color="primary" (click)="createTx()">
+                            Create Transaction
+                        </button>
+                        <button mat-raised-button color="primary" (click)="wallet.privateKey='';wallet.publicKey='';wallet.address='';txRecipient='';txAmount='';">
+                            Clear
+                        </button>
+                    </mat-card-content>
+                </mat-card>
+            </mat-tab>
+            <mat-tab label="Miner">
+                <ng-template mat-tab-label>
+                    <mat-icon style="margin-right: 7px;">lock_open</mat-icon>Miner
+                </ng-template>
+                <mat-card style="margin: 25px;">
+                    <mat-card-header>
+                        <mat-card-title><b>Miner</b></mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <form style="margin-bottom: 20px;">
+                            <mat-form-field style="width: 100%;">
+                                <input name="mAddress" matInput [(ngModel)]="mAddress" type="text">
+                                <mat-hint align="start"><strong>Address to Pay</strong></mat-hint>
+                            </mat-form-field>
+                        </form>
+                        <button mat-raised-button color="warn" (click)="mineBlock()">
+                            Mine Block
+                        </button>
+                        <div *ngIf="mining">
+                            <h5 style="text-align: center;">Mining...</h5>
+                            <mat-progress-bar mode="buffer"></mat-progress-bar>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </mat-tab>
+            <mat-tab label="Miner">
+                <ng-template mat-tab-label>
+                    <mat-icon style="margin-right: 7px;">view_module</mat-icon>Blockchain
+                </ng-template>
+                <mat-card style="margin: 25px;">
+                    <mat-card-header>
+                        <mat-card-title><b>Block Information</b></mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <div class="button-row" style="width: 1100px; margin: 0 auto; margin-bottom: 15px;">
+                            <button mat-raised-button color="primary" (click)="getBlockInfo()">
+                                Search For Block
+                            </button>
+                            <button mat-raised-button color="primary" (click)="prevBlockInfo()">
+                                Prev
+                            </button>
+                            <button mat-raised-button color="primary" (click)="nextBlockInfo()">
+                                Next
+                            </button>
+                            <button mat-raised-button color="primary" (click)="getHeight()">
+                                Get Height
+                            </button>
+                        </div>
+                        <form>
+                            <mat-form-field [floatLabel]="always">
+                                <input name="bNum" matInput placeholder="Block Number" [(ngModel)]="blockNumber" type="text">
+                        </mat-form-field>
+                            Height: {{ height }}
+                        </form>
+                        <p><b>Hash:</b> {{ block.hash }}</p>
+                        <p><b>Nonce:</b> {{ block.nonce }}</p>
+                        <p><b>Timestamp:</b> {{ block.timestamp }}</p>
+                        <p><b>Coinbase:</b> {{ block.coinbase }}</p>
+                        <p><b>Transactions:</b> {{ block.transactions }}</p>
+                        <p><b>Previous Hash:</b> {{ block.prevHash }}</p>
+                    </mat-card-content>
+                </mat-card>
+            </mat-tab>
+            <mat-tab label="Miner">
+                <ng-template mat-tab-label>
+                    <mat-icon style="margin-right: 7px;">swap_horiz</mat-icon>Transactions
+                </ng-template>
+                <mat-card style="margin: 25px;">
+                    <mat-card-header>
+                        <mat-card-title><b>Unconfirmed Transactions</b></mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <button mat-raised-button color="primary" (click)="getUnconfirmedTxs()" style="margin-bottom: 15px;">
+                            Get Unconfirmed Transactions
+                        </button>
+                        <mat-card *ngFor="let tx of transactions" style="margin-bottom: 15px; font-size: 12px;">
+                            <p><b>Sending Address:</b> {{ tx.addressFrom }}</p>
+                            <p><b>Receving Address:</b> {{ tx.addressTo }}</p>
+                            <p><b>PubKey:</b> {{ tx.publicKey }}</p>
+                            <p><b>Amount:</b> {{ tx.amount }}</p>
+                            <p><b>Signature:</b> {{ tx.signature }}</p>
+                        </mat-card>
+                    </mat-card-content>
+                    <b>Total unconfirmed transactions:</b> {{ transactions.length }}
+                </mat-card>
+            </mat-tab>
+        </mat-tab-group>
+    </mat-card-content>
+</mat-card>
